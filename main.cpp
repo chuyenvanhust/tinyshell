@@ -5,6 +5,8 @@
 #include <csignal>
 #include <windows.h>
 #include <thread>
+#include <chrono>
+
 #include "Feature/features.h"
 
 CommandHistory commandHistory;
@@ -19,21 +21,49 @@ AliasManager aliasManager;
 BookmarkManager bookmarkManager;
 ConsoleColor currentColor = ConsoleColor::WHITE;
 
-// Hàm in ra các thông tin ban đầu khi shell khởi động
-void printInitialInfo()
-{
-    // Lấy PID của chính tiến trình hiện tại (main.exe)
-    DWORD pid = GetCurrentProcessId();
+// Đặt màu chữ
+void setColor(int color) {
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color);
+}
 
-    // In ra các thông tin ban đầu
-    std::cout << "========================================" << std::endl;
-    std::cout << "              Tiny Shell                " << std::endl;
-    std::cout << "========================================" << std::endl;
+// In từng dòng với màu khác nhau
+void printColorLines(const std::vector<std::string> &lines, const std::vector<int> &colors) {
+    for (size_t i = 0; i < lines.size(); ++i) {
+        setColor(colors[i % colors.size()]);
+        std::cout << lines[i] << std::endl;
+    }
+    setColor(7); // reset về màu trắng
+}
+
+void showStartupBanner() {
+    clearScreen();
+     std::vector<std::string> art = {
+    " _______  _____  _   _  __     __    _____  _    _  _______  _       _ ",
+    "|__   __||_   _|| \\ | | \\ \\   / /   / ____|| |  | ||   ____|| |     | |   ",
+    "   | |     | |  |  \\| |  \\ \\_/ /   | (___  | |__| ||  |__   | |     | |   ",
+    "   | |     | |  |     |   \\   /     \\___ \\ |  __  ||   __|  | |     | |   ",
+    "   | |    _| |_ | |\\  |    | |      ____) || |  | ||  |____ | |____ | |____",
+    "   |_|   |_____||_| \\_|    |_|     |_____/ |_|  |_||_______||______||______|",
+    };
+
+    std::vector<int> gradientColors = {
+        9, 11, 10, 14, 13, 12, 15  // xanh dương, xanh lá, vàng, hồng, trắng,...
+    };
+
+    printColorLines(art, gradientColors);
+    std::cout << std::endl;
+
+    // In các dòng welcome
+    setColor(10);  // xanh lá
     std::cout << "Welcome to Tiny Shell!" << std::endl;
-    std::cout << "This is a simple shell program to interact with the Windows operating system." << std::endl;
-    std::cout << "PID of Tiny Shell: " << pid << std::endl;
-    std::cout << "Type 'help' to see the list of available commands." << std::endl;
-    std::cout << "========================================" << std::endl;
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    setColor(14);  // vàng
+    std::cout << "Type 'help' to get started, or 'exit' to quit." << std::endl;
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    setColor(7);   // reset màu trắng
+    std::cout << std::endl;
 }
 
 // Hàm thực thi lệnh -> Có tất cả 58 lệnh
@@ -241,7 +271,7 @@ void executeCommand(const std::string &command, const std::vector<std::string> &
         dancing();
     }else if (command == "ronaldo")
     {
-        showRonaldo();
+        displayRonaldoSiu();
     }
     else if (command == "tictactoe")
     {
@@ -629,7 +659,7 @@ std::vector<std::string> splitInput(const std::string &input)
 int main()
 {
     //  In ra thông tin ban đầu khi shell khởi động
-    printInitialInfo();
+    showStartupBanner();
 
     commandHistory.load(); // Tải lịch sử từ file (nếu có)
 
