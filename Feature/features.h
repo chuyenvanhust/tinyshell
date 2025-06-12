@@ -20,7 +20,11 @@
 // TÍNH TOÁN NÂNG CAO (18)
 #include "variables.h"       // 0 lệnh
 #include "dancing.h"         // 0 lệnh
+#include "ronaldo.h"
+#include "random_fact.h"
 #include "function.h"        // 2 lệnh
+#include "net_speed.h"
+#include "solve_quadratic.h"
 #include "conditional.h"     // 1 lệnh
 #include "environment.h"     // 9 lệnh
 #include "loop.h"            // 1 lệnh

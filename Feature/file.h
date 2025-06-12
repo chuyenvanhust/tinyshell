@@ -447,7 +447,11 @@ private:
         }
         std::cout << "End of reading. Returning to shell..." << std::endl;
     }
+
+
 };
+
+
 
 // Khởi tạo biến tĩnh
 bool FileManager::interrupted = false;

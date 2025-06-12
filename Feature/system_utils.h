@@ -137,6 +137,74 @@ public:
         }
     }
 
+    void showOSInfo(const std::vector<std::string> &args) 
+    {
+        if (!args.empty())
+        {
+            std::cerr << "Usage: osinfo" << std::endl;
+            return;
+        }
+
+        OSVERSIONINFOEX osvi;
+        SYSTEM_INFO si;
+        ZeroMemory(&si, sizeof(SYSTEM_INFO));
+        ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
+        osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+
+        if (!GetVersionEx((OSVERSIONINFO*)&osvi)) {
+            std::cout << "Failed to get OS version info." << std::endl;
+            return;
+        }
+
+        GetSystemInfo(&si);
+
+        std::cout << "Operating System Information:" << std::endl;
+        std::cout << "-----------------------------------" << std::endl;
+        std::cout << "Windows Version: " << osvi.dwMajorVersion << "." << osvi.dwMinorVersion << std::endl;
+        std::cout << "Build Number   : " << osvi.dwBuildNumber << std::endl;
+        std::cout << "Platform ID    : " << osvi.dwPlatformId << std::endl;
+        std::cout << "Processor Arch : ";
+        switch (si.wProcessorArchitecture) {
+            case PROCESSOR_ARCHITECTURE_AMD64: std::cout << "x64 (AMD or Intel)" << std::endl; break;
+            case PROCESSOR_ARCHITECTURE_INTEL: std::cout << "x86" << std::endl; break;
+            case PROCESSOR_ARCHITECTURE_ARM: std::cout << "ARM" << std::endl; break;
+            default: std::cout << "Unknown Architecture" << std::endl; break;
+        }
+    }
+
+    void listDrivers(const std::vector<std::string> &args) 
+    {
+        if (!args.empty())
+        {
+            std::cerr << "Usage: list_drivers" << std::endl;
+            return;
+        }
+        DWORD drives = GetLogicalDrives();
+        if (drives == 0) {
+            std::cerr << "Failed to get drive list.\n";
+            return;
+        }
+
+        std::cout << "Available Drives:\n";
+        for (char letter = 'A'; letter <= 'Z'; ++letter) {
+            if (drives & (1 << (letter - 'A'))) {
+                std::string rootPath = std::string(1, letter) + ":\\";
+                UINT type = GetDriveTypeA(rootPath.c_str());
+
+                std::cout << " - " << rootPath << " : ";
+                switch (type) {
+                    case DRIVE_FIXED:     std::cout << "Local Disk"; break;
+                    case DRIVE_REMOVABLE: std::cout << "Removable"; break;
+                    case DRIVE_CDROM:     std::cout << "CD-ROM"; break;
+                    case DRIVE_REMOTE:    std::cout << "Network Drive"; break;
+                    case DRIVE_RAMDISK:   std::cout << "RAM Disk"; break;
+                    default:              std::cout << "Unknown"; break;
+                }
+                std::cout << std::endl;
+            }
+        }
+    }
+
     void showCalculator(const std::vector<std::string> &args)
     {
         if (!args.empty())

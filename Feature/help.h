@@ -43,6 +43,8 @@ void showHelp(const std::vector<std::string> &args)
     std::cout << std::setw(20) << "cpuinfo" << ": Show CPU information" << std::endl;
     std::cout << std::setw(20) << "meminfo" << ": Show memory information" << std::endl;
     std::cout << std::setw(20) << "diskinfo" << ": Show disk information" << std::endl;
+    std::cout << std::setw(20) << "osinfo" << ": Show os information" << std::endl;
+    std::cout << std::setw(20) << "list_drivers" << ": List all drivers" << std::endl;  
     std::cout << std::setw(20) << "--------------------" << "--------------------" << std::endl;
     std::cout << std::setw(20) << "change_color" << ": Change text color" << std::endl;
     std::cout << std::setw(20) << "calculate" << ": Calculate expression value" << std::endl;
@@ -67,11 +69,14 @@ void showHelp(const std::vector<std::string> &args)
     std::cout << std::setw(20) << "--------------------" << "--------------------" << std::endl;
     std::cout << std::setw(20) << "write_file" << ": Write content to file" << std::endl;
     std::cout << std::setw(20) << "read_file" << ": Read content from file" << std::endl;
+    std::cout << std::setw(20) << "copy_file" << ": Copy a file from source to destination" << std::endl;
     std::cout << std::setw(20) << "file_size" << ": Get file size" << std::endl;
+
     std::cout << std::setw(20) << "--------------------" << "--------------------" << std::endl;
     std::cout << std::setw(20) << "dancing" << ": Show dancing faces" << std::endl;
     std::cout << std::setw(20) << "tictactoe" << ": Start a Tic-Tac-Toe game" << std::endl;
     std::cout << std::setw(20) << "duck" << ": Show a duck" << std::endl;
+    std::cout << std::setw(20) << "random_fact" << ": Show a random fact" << std::endl;
     std::cout << std::setw(20) << "--------------------" << "--------------------" << std::endl;
     std::cout << std::setw(20) << "cd" << ": Change directory" << std::endl;
     std::cout << std::setw(20) << "dir" << ": List directory contents" << std::endl;

@@ -189,6 +189,12 @@ void executeCommand(const std::string &command, const std::vector<std::string> &
     else if (command == "diskinfo")
     {
         systemUtils.showDiskInfo(args);
+    }else if (command == "osinfo") 
+    {
+        systemUtils.showOSInfo(args);
+    }else if (command == "list_drivers") 
+    {
+    systemUtils.listDrivers(args);
     }
     else if (command == "calculator")
     {
@@ -205,6 +211,9 @@ void executeCommand(const std::string &command, const std::vector<std::string> &
     else if (command == "clear")
     {
         clearScreen();
+    }else if (command == "solve_quadratic")
+    {
+        solveQuadratic(args);
     }
     else if (command == "calculate")
     {
@@ -230,6 +239,9 @@ void executeCommand(const std::string &command, const std::vector<std::string> &
     else if (command == "dancing")
     {
         dancing();
+    }else if (command == "ronaldo")
+    {
+        showRonaldo();
     }
     else if (command == "tictactoe")
     {
@@ -238,6 +250,12 @@ void executeCommand(const std::string &command, const std::vector<std::string> &
     else if (command == "duck")
     {
         processManager.startDuck();
+    }else if (command == "random_fact")
+    {
+        printRandomFact();
+    }else if (command == "net_speed")
+    {
+        showNetSpeed(args);
     }
     else if (command == "function")
     {
@@ -549,7 +567,7 @@ std::vector<std::string> splitInput(const std::string &input)
         if (ch == '\"')
         {
             inQuotes = !inQuotes;
-            if (!inQuotes) // End of quoted string
+            if (!inQuotes)
             {
                 tokens.push_back(token);
                 token.clear();
@@ -563,7 +581,7 @@ std::vector<std::string> splitInput(const std::string &input)
                 token.clear();
             }
         }
-        else if ((ch == '(' || ch == ')' || ch == ',' || ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '<' || ch == '>') && !inQuotes)
+        else if ((ch == '(' || ch == ')' || ch == ',' || ch == '+' || ch == '*' || ch == '/' || ch == '<' || ch == '>') && !inQuotes)
         {
             if (!token.empty())
             {
@@ -571,6 +589,22 @@ std::vector<std::string> splitInput(const std::string &input)
                 token.clear();
             }
             tokens.push_back(std::string(1, ch));
+        }
+        else if (ch == '–' && !inQuotes)
+        {
+            if (token.empty() && (tokens.empty() || tokens.back() == "("))
+            {
+                token += ch; // part of negative number
+            }
+            else
+            {
+                if (!token.empty())
+                {
+                    tokens.push_back(token);
+                    token.clear();
+                }
+                tokens.push_back("-");
+            }
         }
         else
         {
@@ -583,7 +617,6 @@ std::vector<std::string> splitInput(const std::string &input)
         tokens.push_back(token);
     }
 
-    // Nếu tokens không rỗng thì giải quyết alias
     if (!tokens.empty())
     {
         tokens[0] = aliasManager.resolveAlias(tokens[0]);
@@ -591,6 +624,7 @@ std::vector<std::string> splitInput(const std::string &input)
 
     return tokens;
 }
+
 
 int main()
 {

@@ -10,5 +10,6 @@ foreach(SOURCE_FILE ${PROCESS_SOURCES})
 
     install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION Process)
 endforeach()
-
+if (MSVC)
 set_target_properties(countdown PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
+endif()

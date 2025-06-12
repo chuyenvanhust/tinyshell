@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/install")
 
 add_executable(Operating-System-Project main.cpp)
+target_link_libraries(Operating-System-Project PRIVATE iphlpapi)
 add_definitions(-DNOMINMAX)
 
 install(TARGETS Operating-System-Project RUNTIME DESTINATION .)

@@ -185,7 +185,7 @@ public:
         delete[] cmd; // Giải phóng bộ nhớ
     }
 
-    // Nhóm Forground | Nhóm này không nên chạy Background
+    // Nhóm Foreeground | Nhóm này không nên chạy Background
     void startTicTacToe()
     {
         std::vector<std::string> args = {"Process/tictactoe.exe"};
