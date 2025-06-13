@@ -1,0 +1,8 @@
+D:/IT3070/install/./IT3070.exe
+D:/IT3070/install/Process/child.exe
+D:/IT3070/install/Process/countdown.exe
+D:/IT3070/install/Process/counter.exe
+D:/IT3070/install/Process/duck.exe
+D:/IT3070/install/Process/producer_consumer.exe
+D:/IT3070/install/Process/ronaldo.exe
+D:/IT3070/install/Process/tictactoe.exe

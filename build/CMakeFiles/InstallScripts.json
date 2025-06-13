@@ -1,0 +1,8 @@
+{
+	"InstallScripts" : 
+	[
+		"D:/IT3070/build/cmake_install.cmake",
+		"D:/IT3070/build/Process/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

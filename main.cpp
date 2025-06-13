@@ -1,0 +1,556 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <sstream>
+#include <csignal>
+#include <windows.h>
+#include <thread>
+#include <chrono>
+
+#include "Feature/features.h"
+
+CommandHistory commandHistory;
+EnvironmentManager environmentManager;
+VariableManager variableManager(environmentManager);
+FileManager fileManager;
+ProcessManager processManager;
+DirectoryManager directoryManager;
+SystemUtils systemUtils;
+ConsoleColor currentColor = ConsoleColor::WHITE;
+
+// Đặt màu chữ
+void setColor(int color) {
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color);
+}
+
+// In từng dòng với màu khác nhau
+void printColorLines(const std::vector<std::string> &lines, const std::vector<int> &colors) {
+    for (size_t i = 0; i < lines.size(); ++i) {
+        setColor(colors[i % colors.size()]);
+        std::cout << lines[i] << std::endl;
+    }
+    setColor(7); // reset về màu trắng
+}
+
+void showStartupBanner() {
+    clearScreen();
+     std::vector<std::string> art = {
+    " _______  _____  _   _  __     __    _____  _    _  _______  _       _ ",
+    "|__   __||_   _|| \\ | | \\ \\   / /   / ____|| |  | ||   ____|| |     | |   ",
+    "   | |     | |  |  \\| |  \\ \\_/ /   | (___  | |__| ||  |__   | |     | |   ",
+    "   | |     | |  |     |   \\   /     \\___ \\ |  __  ||   __|  | |     | |   ",
+    "   | |    _| |_ | |\\  |    | |      ____) || |  | ||  |____ | |____ | |____",
+    "   |_|   |_____||_| \\_|    |_|     |_____/ |_|  |_||_______||______||______|",
+    };
+
+    std::vector<int> gradientColors = {
+        9, 11, 10, 14, 13, 12, 15  // xanh dương, xanh lá, vàng, hồng, trắng,...
+    };
+
+    printColorLines(art, gradientColors);
+    std::cout << std::endl;
+
+    // In các dòng welcome
+    setColor(10);  // xanh lá
+    std::cout << "Welcome to Tiny Shell!" << std::endl;
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    setColor(14);  // vàng
+    std::cout << "Type 'help' to get started, or 'exit' to quit." << std::endl;
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    setColor(7);   // reset màu trắng
+    std::cout << std::endl;
+}
+
+// Hàm thực thi lệnh -> Có tất cả 58 lệnh
+void executeCommand(const std::string &command, const std::vector<std::string> &args)
+{
+    if (command == "set_color")
+    {
+        if (!args.empty())
+        {
+            currentColor = parseColor(args[0]);
+            setColor(currentColor);
+            std::cout << "Color changed to " << args[0] << std::endl;
+        }
+        else
+        {
+            std::cout << "Usage: change_color <color_name>" << std::endl;
+        }
+        return; // Ensure the color change command exits the function
+    }
+    if (command == "delete")
+    {
+        directoryManager.deleteDirectory(args);
+    }
+    else if (command == "move")
+    {
+        directoryManager.moveDirectory(args);
+    }
+    else if (command == "open")
+    {
+        fileManager.openFile(args);
+    }
+    else if (command == "create_file")
+    {
+        fileManager.createFile(args);
+    }
+    else if (command == "delete_file")
+    {
+        fileManager.deleteFile(args);
+    }
+    else if (command == "move_file")
+    {
+        fileManager.moveFile(args);
+    }
+    else if (command == "copy_file")
+    {
+        fileManager.copyFile(args);
+    }
+    else if (command == "exit")
+    {
+        exitShell();
+        PostQuitMessage(0); // Exit the program
+    }
+    else if (command == "tree")
+    {
+        directoryManager.listDirectoryTree(args);
+    }
+    else if (command == "create")
+    {
+        directoryManager.createDirectory(args);
+    }
+    else if (command == "copy")
+    {
+        directoryManager.copyDirectory(args);
+    }
+    else if (command == "run")
+    {
+        runScript(args);
+    }
+    else if (command == "help")
+    {
+        showHelp(args);
+    }
+    else if (command == "rename")
+    {
+        fileManager.renameFile(args);
+    }
+    else if (command == "cd")
+    {
+        changeDirectory(args);
+    }
+    else if (command == "ls")
+    {
+        listDirectoryContents(args);
+    }
+    else if (command == "pwd")
+    {
+        printWorkingDirectory(args);
+    }
+    else if (command == "run_fg")
+    {
+        processManager.startProcessForeground(args);
+    }
+    else if (command == "run_bg")
+    {
+        processManager.startProcessBackground(args);
+    }
+    else if (command == "terminate")
+    {
+        processManager.terminateProcess(args);
+    }
+    else if (command == "ps")
+    {
+        processManager.listProcesses(args);
+    }
+    else if (command == "list_children")
+    {
+        processManager.printAllChildProcesses(args);
+    }
+    else if (command == "child")
+    {
+        processManager.startChildProcess();
+    }
+    else if (command == "countdown")
+    {
+        processManager.startCountdownProcess();
+    }
+    else if (command == "time")
+    {
+        systemUtils.showSystemTime(args);
+    }
+    else if (command == "date")
+    {
+        systemUtils.showSystemDate(args);
+    }
+    else if (command == "uptime")
+    {
+        systemUtils.showSystemUptime(args);
+    }
+    else if (command == "cpuinfo")
+    {
+        systemUtils.showCPUInfo(args);
+    }
+    else if (command == "meminfo")
+    {
+        systemUtils.showMemoryInfo(args);
+    }
+    else if (command == "diskinfo")
+    {
+        systemUtils.showDiskInfo(args);
+    }else if (command == "osinfo") 
+    {
+        systemUtils.showOSInfo(args);
+    }else if (command == "list_drivers") 
+    {
+    systemUtils.listDrivers(args);
+    }
+    else if (command == "calculator")
+    {
+        systemUtils.showCalculator(args);
+    }
+    else if (command == "history")
+    {
+        commandHistory.show();
+    }
+    else if (command == "clear_history")
+    {
+        commandHistory.clear();
+    }
+    else if (command == "clear")
+    {
+        clearScreen();
+    }else if (command == "solve_quadratic")
+    {
+        solveQuadratic(args);
+    }
+    else if (command == "calculate")
+    {
+        // Nếu có tham số truyền vào thì thực hiện tính toán
+        if (!args.empty())
+        {
+            // Gọi hàm evaluateExpression từ biến variableManager để tính toán biểu thức
+            try
+            {
+                double result = variableManager.evaluateExpression(args);
+                std::cout << result << std::endl;
+            }
+            catch (const std::exception &e)
+            {
+                std::cout << "Error: " << e.what() << std::endl;
+            }
+        }
+        else
+        {
+            std::cout << "Usage: calculate <expression>" << std::endl;
+        }
+    }
+    else if (command == "ronaldo")
+    {
+        processManager.startRonaldo();
+    }
+    else if(command =="run_producer_consumer"){
+        processManager.startProducerConsumerWinApi(args);
+    }
+    else if (command == "random_fact")
+    {
+        printRandomFact();
+    }else if (command == "net_speed")
+    {
+        showNetSpeed(args);
+    }
+    else if (command == "suspend")
+    {
+        processManager.suspendProc(args);
+    }
+    else if (command == "resume")
+    {
+        processManager.resumeProc(args);
+    }
+    else if (command == "add_path")
+    {
+        if (!args.empty())
+        {
+            environmentManager.addToPath(args[0]);
+        }
+        else
+        {
+            std::cout << "Usage: add_path <path>" << std::endl;
+        }
+    }
+    else if (command == "remove_path")
+    {
+        if (!args.empty())
+        {
+            environmentManager.removeFromPath(args[0]);
+        }
+        else
+        {
+            std::cout << "Usage: remove_path <path>" << std::endl;
+        }
+    }
+    else if (command == "print_env")
+    {
+        if (!args.empty())
+        {
+            environmentManager.printEnv(args[0]);
+        }
+        else
+        {
+            std::cout << "Usage: print_env <variable>" << std::endl;
+        }
+    }
+    else if (command == "set_env")
+    {
+        // // Nếu có đúng 2 tham số thì thiết lập biến môi trường
+        // if (args.size() == 2)
+        // {
+        //     environmentManager.setEnv(args[0], args[1]);
+        // }
+        // // Nếu có nhiều hơn 2 tham số thì phần tử thứ 2 trở đi sẽ là biểu thức cần tính toán
+        // else if (args.size() > 2)
+        // {
+        //     std::vector<std::string> expression(args.begin() + 1, args.end());
+        //     try
+        //     {
+        //         int result = variableManager.evaluateExpression(expression);
+        //         environmentManager.setEnv(args[0], std::to_string(result));
+        //     }
+        //     catch (const std::exception &e)
+        //     {
+        //         std::cout << "Error: " << e.what() << std::endl;
+        //     }
+        // } // Nếu không có tham số nào thì thông báo lỗi
+        // else
+        // {
+        //     std::cout << "Usage: set_env <variable> <value> or set_env <variable> <expression>" << std::endl;
+        // }
+
+        // Nếu có đúng 3 tham số và tham số thứ 2 là dấu bằng (=) thì thiết lập biến môi trường
+        if (args.size() == 3 && args[1] == "=")
+        {
+            environmentManager.setEnv(args[0], args[2]);
+        }
+        // Nếu có nhiều hơn 3 tham số thì phần tử thứ 2 trở đi sẽ là biểu thức cần tính toán
+        else if (args.size() > 3)
+        {
+            std::vector<std::string> expression(args.begin() + 2, args.end());
+            try
+            {
+                int result = variableManager.evaluateExpression(expression);
+                environmentManager.setEnv(args[0], std::to_string(result));
+            }
+            catch (const std::exception &e)
+            {
+                std::cout << "Error: " << e.what() << std::endl;
+            }
+        }
+        // Nếu không có tham số nào thì thông báo lỗi
+        else
+        {
+            std::cout << "Usage: set_env <variable> = <value> or set_env <variable> = <expression>" << std::endl;
+        }
+    }
+    else if (command == "unset_env")
+    {
+        if (!args.empty())
+        {
+            environmentManager.unsetEnv(args[0]);
+        }
+        else
+        {
+            std::cout << "Usage: unset_env <variable>" << std::endl;
+        }
+    }
+    else if (command == "list_env")
+    {
+        environmentManager.listAllEnv();
+    }
+    else if (command == "is_in_path")
+    {
+        if (!args.empty())
+        {
+            bool result = environmentManager.isInPath(args[0]);
+            std::cout << args[0] << (result ? " is" : " is not") << " in PATH." << std::endl;
+        }
+        else
+        {
+            std::cout << "Usage: is_in_path <path>" << std::endl;
+        }
+    }
+    else if (command == "write_file")
+    {
+        try
+        {
+            fileManager.writeFile(args);
+        }
+        catch (const std::exception &e)
+        {
+            std::cout << "Error: " << e.what() << std::endl;
+        }
+    }
+    else if (command == "read_file")
+    {
+        try
+        {
+            fileManager.readFile(args);
+        }
+        catch (const std::exception &e)
+        {
+            std::cout << "Error: " << e.what() << std::endl;
+        }
+    }
+    else if (command == "file_size")
+    {
+        if (!args.empty())
+        {
+            fileManager.showFileSize(args[0]);
+        }
+        else
+        {
+            std::cout << "Usage: file_size <file_name>" << std::endl;
+        }
+    }
+    else if (command == "convert")
+    {
+        handleBaseConversion(args);
+    }
+    else
+    {
+        std::cout << "Unknown command: " << command << std::endl;
+    }
+}
+
+// Hàm này để tách input thành các tokens, mỗi token là một phần của input
+/* Ví dụ:
+ | Input: calcualte 1 + 2 => tokens: ["calculate", "1", "+", "2"]
+ | Input write_file "Hello World" "output.txt" => tokens: ["write_file", "Hello World", "output.txt"]
+ |
+ | [!] Một số trường hợp khi toán tử (các dấu ngoặc, +, -, *, /) không có khoảng trắng ở giữa,
+ | cần phải tách ra thành các token riêng biệt.
+ | Ví dụ: calculate (1+2) => tokens: ["calculate", "(", "1", "+", "2", ")"]
+ |
+ | [!] Một số trường hợp khi có dấu ngoặc kép, cần phải giữ nguyên nội dung trong dấu ngoặc.
+ | Và nếu gặp dấu phẩy (,) thì cũng cần phải tách ra thành token riêng biệt.
+ | Ví dụ: function f(x, y) "x + y" => tokens: ["function", "f", "(", "x", ",", "y", ")", "\"x + y\""]
+ */
+std::vector<std::string> splitInput(const std::string &input)
+{
+    std::vector<std::string> tokens;
+    std::string token;
+    bool inQuotes = false;
+
+    for (char ch : input)
+    {
+        if (ch == '\"')
+        {
+            inQuotes = !inQuotes;
+            if (!inQuotes)
+            {
+                tokens.push_back(token);
+                token.clear();
+            }
+        }
+        else if (isspace(ch) && !inQuotes)
+        {
+            if (!token.empty())
+            {
+                tokens.push_back(token);
+                token.clear();
+            }
+        }
+        else if ((ch == '(' || ch == ')' || ch == ',' || ch == '+' || ch == '*' || ch == '/' || ch == '<' || ch == '>') && !inQuotes)
+        {
+            if (!token.empty())
+            {
+                tokens.push_back(token);
+                token.clear();
+            }
+            tokens.push_back(std::string(1, ch));
+        }
+        else if (ch == '—' && !inQuotes)
+        {
+            if (token.empty() && (tokens.empty() || tokens.back() == "("))
+            {
+                token += ch; // part of negative number
+            }
+            else
+            {
+                if (!token.empty())
+                {
+                    tokens.push_back(token);
+                    token.clear();
+                }
+                tokens.push_back("-");
+            }
+        }
+        else
+        {
+            token += ch;
+        }
+    }
+
+    if (!token.empty())
+    {
+        tokens.push_back(token);
+    }
+
+    return tokens;
+}
+
+
+int main()
+{
+    //  In ra thông tin ban đầu khi shell khởi động
+    showStartupBanner();
+
+    commandHistory.load(); // Tải lịch sử từ file (nếu có)
+
+    std::string input;
+
+    signal(SIGINT, SIG_IGN);
+
+    while (true)
+    {
+        setColor(ConsoleColor::YELLOW);
+        std::cout << "tiny_shell> ";
+        resetColor();
+
+        setColor(currentColor);
+
+        std::getline(std::cin, input);
+
+        if (std::cin.fail() || std::cin.eof())
+        {
+            std::cin.clear();
+            std::cout << std::endl;
+            continue;
+        }
+
+        // Ghi câu lệnh vào lịch sử
+        commandHistory.add(input);
+
+        // splitInput để tách input thành các tokens
+        std::vector<std::string> tokens = splitInput(input);
+
+        if (tokens.empty())
+            continue;
+
+        // Lấy lệnh từ tokens, là phần tử đầu tiên
+        /* Ví dụ:
+         | Input: calculate 1 + 2 => tokens: ["calculate", "1", "+", "2"] => command: "calculate"
+         | Input write_file "Hello World" "output.txt" => tokens: ["write_file", "Hello World", "output.txt"] => command: "write_file"
+         | Thành phần này quyết định hành động tiếp theo sẽ được thực hiện.
+         */
+        std::string command = tokens[0];
+
+        // Xóa lệnh ra khỏi tokens => tokens chỉ còn các tham số của lệnh
+        tokens.erase(tokens.begin());
+
+        // Xử lý các lệnh còn lại
+        executeCommand(command, tokens);
+    }
+    return 0;
+}
