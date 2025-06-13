@@ -1,0 +1,19 @@
+# Ẩn tất cả các file có đuôi .exe (file thực thi)
+*.exe
+
+# Ẩn thư mục .vscode
+.vscode/
+
+# Ẩn file lịch sử và mọi thứ liên quan
+history.txt
+hello.txt
+
+# Ẩn các thu mục không cần thiết
+.image/
+
+# Ẩn thư mục Private
+Private/
+
+build/
+out/
+install/
